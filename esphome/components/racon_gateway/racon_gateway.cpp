@@ -34,7 +34,7 @@ void RaconGateway::loop() {
 
     // Send parsed data via UDP
     udp.beginPacket(IPAddress(10, 3, 1, 127), this->udp_port);
-    udp.write(parsed_data.c_str());
+    udp.write(reinterpret_cast<const uint8_t*>(parsed_data.c_str()), parsed_data.length());
     udp.endPacket();
   }
   delay(10000);  // 10-second delay similar to your Python code
