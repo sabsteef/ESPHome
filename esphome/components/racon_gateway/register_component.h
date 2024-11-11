@@ -6,7 +6,7 @@
 namespace esphome {
 namespace racon_gateway {
 
-static const auto racon_gateway_config_schema = uart::UARTDevice::UART_DEVICE_SCHEMA;
+static const auto racon_gateway_config_schema = uart::UART_DEVICE_SCHEMA;
 
 }  // namespace racon_gateway
 }  // namespace esphome

@@ -3,18 +3,26 @@ import esphome.config_validation as cv
 from esphome.components import uart
 from esphome import automation
 
-# Define the racon_gateway namespace
+# Create a namespace for the component
 racon_gateway_ns = cg.esphome_ns.namespace('racon_gateway')
 RaconGateway = racon_gateway_ns.class_('RaconGateway', cg.Component, uart.UARTDevice)
 
-# Configuration schema
+# Define the UDP port as a configurable option with a default value
 CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(): cv.declare_id(RaconGateway),
-    cv.Optional('uart_id'): cv.use_id(uart.UARTComponent),
+    cv.Optional("udp_port", default=8125): cv.port,  # Default UDP port is 8125
+    cv.Optional("uart_id"): cv.use_id(uart.UARTComponent),
 }).extend(cv.COMPONENT_SCHEMA).extend(uart.UART_DEVICE_SCHEMA)
 
-# Code generation function
+# Define the code generation function
 async def to_code(config):
-    var = cg.new_Pvariable(config[cv.GenerateID()])
+    # Retrieve the UART component
+    parent = await cg.get_variable(config["uart_id"])
+
+    # Create an instance of the component with the UART parent
+    var = cg.new_Pvariable(config[cv.GenerateID()], parent)
+
+    # Register the component and set additional options
     await cg.register_component(var, config)
     await uart.register_uart_device(var, config)
+    cg.add(var.udp_port, config["udp_port"])  # Set the UDP port from configuration
