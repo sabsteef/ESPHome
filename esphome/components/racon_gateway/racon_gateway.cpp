@@ -1,5 +1,8 @@
 #include "racon_gateway.h"
 #include "esphome/core/log.h"
+#include <WiFi.h>          // Include WiFi support
+#include <WiFiUdp.h>       // Include WiFi UDP support
+#include <string>          // Standard string support
 
 namespace esphome {
 namespace racon_gateway {
@@ -8,7 +11,7 @@ static const char *TAG = "racon_gateway";
 
 void RaconGateway::setup() {
   ESP_LOGI(TAG, "Setting up Racon Gateway component...");
-  udp.begin(8125);  // UDP port
+  udp.begin(this->udp_port);  // Initialize UDP with the specified port
 }
 
 void RaconGateway::loop() {
@@ -19,7 +22,7 @@ void RaconGateway::loop() {
   delay(1000);
 
   // Read incoming serial data
-  String data;
+  std::string data;
   while (this->available()) {
     data += static_cast<char>(this->read());
   }
@@ -27,19 +30,19 @@ void RaconGateway::loop() {
   // Parse the data as required
   if (data.length() > 0) {
     // Dummy parsing function
-    String parsed_data = parse_data(data);
+    std::string parsed_data = parse_data(data);
 
     // Send parsed data via UDP
-    udp.beginPacket(IPAddress(10, 3, 1, 127), 8125);
+    udp.beginPacket(IPAddress(10, 3, 1, 127), this->udp_port);
     udp.write(parsed_data.c_str());
     udp.endPacket();
   }
   delay(10000);  // 10-second delay similar to your Python code
 }
 
-String RaconGateway::parse_data(const String &data) {
+// Example parsing function for data
+std::string RaconGateway::parse_data(const std::string &data) {
   // Example data parsing logic
-  // Replace this with your real parsing function based on `datamap`
   return "parsed_data:" + data;  // For illustration only
 }
 
