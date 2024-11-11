@@ -1,49 +1,41 @@
 #include "racon_gateway.h"
 #include "esphome/core/log.h"
-#include <WiFi.h>          // Include WiFi support
-#include <WiFiUdp.h>       // Include WiFi UDP support
-#include <string>          // Standard string support
+#include <string>
 
 namespace esphome {
 namespace racon_gateway {
 
 static const char *TAG = "racon_gateway";
+static const char send_string[] = "\x02\xFE\x01\x05\x08\x02\x01\x69\xAB\x03";
 
 void RaconGateway::setup() {
   ESP_LOGI(TAG, "Setting up Racon Gateway component...");
-  udp.begin(this->udp_port);  // Initialize UDP with the specified port
 }
 
 void RaconGateway::loop() {
-  static const char send_string[] = "\x02\xFE\x01\x05\x08\x02\x01\x69\xAB\x03";
-
-  // Send the string over serial
+  // Write the specified string to UART
   this->write_array(reinterpret_cast<const uint8_t *>(send_string), sizeof(send_string) - 1);
-  delay(1000);
+  delay(1000);  // 1-second delay
 
-  // Read incoming serial data
+  // Read incoming data from UART
   std::string data;
   while (this->available()) {
     data += static_cast<char>(this->read());
   }
 
-  // Parse the data as required
-  if (data.length() > 0) {
-    // Dummy parsing function
+  // Parse and log data if available
+  if (!data.empty()) {
     std::string parsed_data = parse_data(data);
-
-    // Send parsed data via UDP
-    udp.beginPacket(IPAddress(10, 3, 1, 127), this->udp_port);
-    udp.write(reinterpret_cast<const uint8_t*>(parsed_data.c_str()), parsed_data.length());
-    udp.endPacket();
+    ESP_LOGI(TAG, "Parsed Data: %s", parsed_data.c_str());
   }
-  delay(10000);  // 10-second delay similar to your Python code
+
+  delay(10000);  // Delay similar to your Python code (10 seconds)
 }
 
-// Example parsing function for data
 std::string RaconGateway::parse_data(const std::string &data) {
-  // Example data parsing logic
-  return "parsed_data:" + data;  // For illustration only
+  // Example data parsing logic, modify this to match your Python `parse_data`
+  std::string result = "parsed_data:" + data;
+  return result;
 }
 
 }  // namespace racon_gateway

@@ -7,24 +7,20 @@ from esphome import automation
 racon_gateway_ns = cg.esphome_ns.namespace('racon_gateway')
 RaconGateway = racon_gateway_ns.class_('RaconGateway', cg.Component, uart.UARTDevice)
 
-# Configuration schema without UART_DEVICE_SCHEMA
+# Define the schema
 CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(): cv.declare_id(RaconGateway),
-    cv.Optional("udp_port", default=8125): cv.port,  # Default UDP port
-    cv.Required("uart_id"): cv.use_id(uart.UARTComponent),  # Link to UARTComponent
-}).extend(cv.COMPONENT_SCHEMA)  # Only extend COMPONENT_SCHEMA
+    cv.Required("uart_id"): cv.use_id(uart.UARTComponent),
+}).extend(cv.COMPONENT_SCHEMA)
 
-# Define the code generation function
+# Code generation function
 async def to_code(config):
-    # Retrieve the UART component instance by ID
+    # Retrieve the UART component
     parent = await cg.get_variable(config["uart_id"])
 
-    # Create an instance of RaconGateway with the UART parent
+    # Create an instance of RaconGateway with UART as parent
     var = cg.new_Pvariable(config[cv.GenerateID()], parent)
 
-    # Register as a component and associate UART
+    # Register the component and link the UART
     await cg.register_component(var, config)
     await uart.register_uart_device(var, config)
-
-    # Set UDP port using the setter
-    cg.add(var.set_udp_port(config["udp_port"]))
