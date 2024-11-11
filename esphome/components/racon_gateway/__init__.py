@@ -25,4 +25,4 @@ async def to_code(config):
     # Register the component and set additional options
     await cg.register_component(var, config)
     await uart.register_uart_device(var, config)
-    cg.add(var.udp_port, config["udp_port"])  # Set the UDP port from configuration
+    cg.add(var.set_udp_port(config["udp_port"]))  # Set the UDP port from configuration

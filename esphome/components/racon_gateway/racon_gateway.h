@@ -18,9 +18,11 @@ class RaconGateway : public Component, public uart::UARTDevice {
   void setup() override;
   void loop() override;
 
-  int udp_port;  // Add this to allow setting the UDP port via configuration
+  // Setter for UDP port
+  void set_udp_port(int port) { this->udp_port = port; }
 
  private:
+  int udp_port;
   WiFiUDP udp;  // WiFi UDP instance
   std::string parse_data(const std::string &data);  // Use std::string instead of Arduino String
 };
