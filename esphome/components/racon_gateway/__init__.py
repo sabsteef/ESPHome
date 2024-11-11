@@ -11,8 +11,8 @@ RaconGateway = racon_gateway_ns.class_('RaconGateway', cg.Component, uart.UARTDe
 CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(): cv.declare_id(RaconGateway),
     cv.Optional("udp_port", default=8125): cv.port,  # Default UDP port is 8125
-    cv.Optional("uart_id"): cv.use_id(uart.UARTComponent),
-}).extend(cv.COMPONENT_SCHEMA).extend(uart.UART_DEVICE_SCHEMA)
+    cv.Required("uart_id"): cv.use_id(uart.UARTComponent),  # Link to UARTComponent
+}).extend(cv.COMPONENT_SCHEMA).extend(uart.UART_DEVICE_SCHEMA)  # Extend UART schema directly
 
 # Define the code generation function
 async def to_code(config):
