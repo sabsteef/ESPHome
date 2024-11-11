@@ -2,7 +2,6 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/uart/uart.h"
-#include "esphome/core/hal.h"
 #include <WiFiUdp.h>           // Include WiFi UDP support
 #include "esphome/core/log.h"   // Include ESPHome logging support
 #include "esphome/core/util.h"  // Include utility functions
@@ -19,8 +18,7 @@ class RaconGateway : public Component, public uart::UARTDevice {
   void setup() override;
   void loop() override;
 
-  // UDP Port
-  int udp_port;
+  int udp_port;  // Add this to allow setting the UDP port via configuration
 
  private:
   WiFiUDP udp;  // WiFi UDP instance
