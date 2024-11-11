@@ -1,41 +1,19 @@
 #include "racon_gateway.h"
 #include "esphome/core/log.h"
-#include <string>
 
 namespace esphome {
 namespace racon_gateway {
 
 static const char *TAG = "racon_gateway";
-static const char send_string[] = "\x02\xFE\x01\x05\x08\x02\x01\x69\xAB\x03";
 
 void RaconGateway::setup() {
-  ESP_LOGI(TAG, "Setting up Racon Gateway component...");
+  ESP_LOGI(TAG, "Racon Gateway component setup initialized");
 }
 
 void RaconGateway::loop() {
-  // Write the specified string to UART
-  this->write_array(reinterpret_cast<const uint8_t *>(send_string), sizeof(send_string) - 1);
-  delay(1000);  // 1-second delay
-
-  // Read incoming data from UART
-  std::string data;
-  while (this->available()) {
-    data += static_cast<char>(this->read());
-  }
-
-  // Parse and log data if available
-  if (!data.empty()) {
-    std::string parsed_data = parse_data(data);
-    ESP_LOGI(TAG, "Parsed Data: %s", parsed_data.c_str());
-  }
-
-  delay(10000);  // Delay similar to your Python code (10 seconds)
-}
-
-std::string RaconGateway::parse_data(const std::string &data) {
-  // Example data parsing logic, modify this to match your Python `parse_data`
-  std::string result = "parsed_data:" + data;
-  return result;
+  // Log a message to indicate the loop is running
+  ESP_LOGI(TAG, "Racon Gateway loop running");
+  delay(5000);  // 5-second delay
 }
 
 }  // namespace racon_gateway
