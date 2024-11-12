@@ -40,3 +40,55 @@ void RaconGateway::setup() {
     this->send_and_read_data();
   });
 }
+
+// Parse the data according to datamap and convert to JSON string
+std::string RaconGateway::parse_data(const std::string &data) {
+  std::ostringstream oss;
+  oss << "{";
+
+  for (const auto& field : this->datamap) {
+    // Ensure we are within data bounds
+    if (field.offset >= data.size()) continue;
+
+    int raw_value = static_cast<uint8_t>(data[field.offset]);
+    float transformed_value = field.transform(raw_value);
+
+    // Append to JSON string
+    oss << "\"" << field.name << "\": " << std::fixed << std::setprecision(2) << transformed_value << ",";
+  }
+
+  std::string result = oss.str();
+  result.pop_back();  // Remove trailing comma
+  result += "}";
+
+  return result;
+}
+
+// Read data from UART, parse it, and publish to MQTT
+void RaconGateway::send_and_read_data() {
+  // Write the specified string to UART
+  this->write_array(reinterpret_cast<const uint8_t *>(send_string), sizeof(send_string) - 1);
+
+  // Read incoming data from UART
+  std::string data;
+  while (this->available()) {
+    data += static_cast<char>(this->read());
+  }
+
+  // Parse and publish if data is available
+  if (!data.empty()) {
+    std::string parsed_data = parse_data(data);
+    ESP_LOGI(TAG, "Parsed Data: %s", parsed_data.c_str());
+
+    // Publish parsed data to MQTT
+    if (mqtt::global_mqtt_client != nullptr) {
+      ESP_LOGI(TAG, "Publishing parsed data to MQTT topic: %s", mqtt_topic_parsed_data);
+      mqtt::global_mqtt_client->publish(mqtt_topic_parsed_data, parsed_data.c_str());
+    } else {
+      ESP_LOGW(TAG, "MQTT client not available, data not published");
+    }
+  }
+}
+
+}  // namespace racon_gateway
+}  // namespace esphome
