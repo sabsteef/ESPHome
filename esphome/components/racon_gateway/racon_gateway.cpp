@@ -26,15 +26,18 @@ void RaconGateway::send_and_read_data() {
     data += static_cast<char>(this->read());
   }
 
-  // Parse and log data if available
+  // Parse data and update sensor if available
   if (!data.empty()) {
     std::string parsed_data = parse_data(data);
     ESP_LOGI(TAG, "Parsed Data: %s", parsed_data.c_str());
+
+    // Send parsed data to Home Assistant via the sensor
+    this->parsed_data_sensor->publish_state(parsed_data);
   }
 }
 
 std::string RaconGateway::parse_data(const std::string &data) {
-  // Example data parsing logic; modify this to match your Python `parse_data`
+  // Example data parsing logic; modify this to match your needs
   std::string result = "parsed_data:" + data;
   return result;
 }
