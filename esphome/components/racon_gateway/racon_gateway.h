@@ -32,19 +32,15 @@ struct ParsedData {
 
 class RaconGateway : public Component, public uart::UARTDevice {
  public:
-  RaconGateway(UARTComponent *parent) : UARTDevice(parent) {}
+  // Constructor met het juiste type voor de parent-parameter
+  RaconGateway(uart::UARTComponent *parent) : UARTDevice(parent) {}
 
-  // Voegt de setup functie toe voor initialisatie
+  // Functies voor initialisatie en dataverwerking
   void setup() override;
-
-  // Functie om data te verzenden en te lezen
   void send_and_read_data();
 
  private:
-  // Functie om binnenkomende data te parsen en om te zetten naar ParsedData struct
   ParsedData parse_binary_data(const std::vector<uint8_t>& data);
-
-  // Hulpmethode om de data te converteren naar een JSON string voor MQTT-publicatie
   std::string parse_data(const std::string &data);
 };
 
