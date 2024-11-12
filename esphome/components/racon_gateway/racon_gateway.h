@@ -1,36 +1,27 @@
-#pragma once
-
-#include "esphome/core/component.h"
-#include "esphome/components/uart/uart.h"
-#include "esphome/core/log.h"
-#include <WiFiUdp.h>
-#include <vector>
-#include <string>
-#include <functional>
+#include "esphome.h"
 
 namespace esphome {
 namespace racon_gateway {
 
-// Helper to convert byte to bit array
-std::vector<int> byte_to_bit(uint8_t x);
+static const size_t EXPECTED_DATA_LENGTH = 64;  // Pas aan naar de verwachte lengte van de data
 
-// Define a data field structure
-struct DataField {
-  int offset;
-  std::function<float(int)> transform;
-  const char* name;
+struct ParsedData {
+  float aanvoer_temp;
+  float retour_temp;
+  float zonneboiler_temp;
+  float buiten_temp;
+  float boiler_temp;
+  // Voeg hier andere velden toe zoals in `datamap`
 };
 
-class RaconGateway : public Component, public uart::UARTDevice {
+class RaconGateway : public Component, public UARTDevice {
  public:
-  explicit RaconGateway(uart::UARTComponent *parent) : uart::UARTDevice(parent) {}
-
+  RaconGateway(UARTComponent *parent) : UARTDevice(parent) {}
   void setup() override;
   void send_and_read_data();
-  std::string parse_data(const std::string &data);
 
  private:
-  std::vector<DataField> datamap;
+  ParsedData parsed_data;
 };
 
 }  // namespace racon_gateway

@@ -1,8 +1,7 @@
 #include "racon_gateway.h"
 #include "esphome/core/log.h"
+#include "esphome/components/mqtt/mqtt_client.h"  // Voeg MQTT-component toe
 #include "esphome.h"
-#include "esphome/components/uart/uart.h"
-#include "esphome/components/mqtt/mqtt_client.h"
 #include <vector>
 
 namespace esphome {
@@ -36,40 +35,34 @@ void RaconGateway::send_and_read_data() {
 
   // Verwerk de data met dezelfde structuur als Python `fmt`
   if (data.size() == EXPECTED_DATA_LENGTH) {
-    // Maak een variabele `parsed_data` aan waarin we de velden opslaan
-    ParsedData parsed_data;
-
-    // Pas dezelfde conversies toe zoals in je `datamap`
-    parsed_data.aanvoer_temp = data[5] * 0.01f;
-    parsed_data.retour_temp = data[7] * 0.01f;
-    parsed_data.zonneboiler_temp = data[9] * 0.01f;
-    parsed_data.buiten_temp = data[11] * 0.01f;
-    parsed_data.boiler_temp = data[13] * 0.01f;
+    // Vul de parsed_data struct met de geconverteerde waarden
+    this->parsed_data.aanvoer_temp = data[5] * 0.01f;
+    this->parsed_data.retour_temp = data[7] * 0.01f;
+    this->parsed_data.zonneboiler_temp = data[9] * 0.01f;
+    this->parsed_data.buiten_temp = data[11] * 0.01f;
+    this->parsed_data.boiler_temp = data[13] * 0.01f;
     // Voeg andere velden toe zoals in `datamap` met conversies
     // ...
 
-    // Publiceer of verwerk de parsed data verder
+    // Log de geparste data
     ESP_LOGI(TAG, "Parsed Data:");
-    ESP_LOGI(TAG, "  Aanvoer Temp: %f", parsed_data.aanvoer_temp);
-    ESP_LOGI(TAG, "  Retour Temp: %f", parsed_data.retour_temp);
-    ESP_LOGI(TAG, "  Zonneboiler Temp: %f", parsed_data.zonneboiler_temp);
-    ESP_LOGI(TAG, "  Buiten Temp: %f", parsed_data.buiten_temp);
-    ESP_LOGI(TAG, "  Boiler Temp: %f", parsed_data.boiler_temp);
-    // Voeg logging toe voor de andere velden
+    ESP_LOGI(TAG, "  Aanvoer Temp: %f", this->parsed_data.aanvoer_temp);
+    ESP_LOGI(TAG, "  Retour Temp: %f", this->parsed_data.retour_temp);
+    ESP_LOGI(TAG, "  Zonneboiler Temp: %f", this->parsed_data.zonneboiler_temp);
+    ESP_LOGI(TAG, "  Buiten Temp: %f", this->parsed_data.buiten_temp);
+    ESP_LOGI(TAG, "  Boiler Temp: %f", this->parsed_data.boiler_temp);
 
     // Maak een JSON payload voor MQTT
     char payload[256];
     snprintf(payload, sizeof(payload),
              "{\"aanvoer_temp\": %.2f, \"retour_temp\": %.2f, \"zonneboiler_temp\": %.2f, "
              "\"buiten_temp\": %.2f, \"boiler_temp\": %.2f}",
-             parsed_data.aanvoer_temp, parsed_data.retour_temp, parsed_data.zonneboiler_temp,
-             parsed_data.buiten_temp, parsed_data.boiler_temp);
+             this->parsed_data.aanvoer_temp, this->parsed_data.retour_temp, this->parsed_data.zonneboiler_temp,
+             this->parsed_data.buiten_temp, this->parsed_data.boiler_temp);
 
     // Publiceer de data naar een specifiek MQTT-topic
-    if (this->mqtt_client_ != nullptr) {
-      this->mqtt_client_->publish("racon_gateway/sensor_data", payload);
-      ESP_LOGI(TAG, "Geparste data naar MQTT gestuurd: %s", payload);
-    }
+    mqtt::global_mqtt_client->publish("racon_gateway/sensor_data", payload);
+    ESP_LOGI(TAG, "Geparste data naar MQTT gestuurd: %s", payload);
   } else {
     ESP_LOGW(TAG, "Data niet ontvangen in het verwachte formaat of lengte!");
   }
